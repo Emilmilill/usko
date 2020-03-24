@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Výsledky učiteľov{% endblock %}
+
+{% block content %}
+<div class="container">
+    <h1 class="text-center mb-5">Výsledky učiteľov</h1>
+
+    <div class="accordion" id="teachers">
+        {% for teacher in evaluated_teachers %}
+            <div class="card">
+
+                {% include "parts/supervisor_parts/card_header.html" %}
+
+                <div id="collapse{{teacher.id}}" class="collapse " aria-labelledby="heading_{{teacher.id}}" data-parent="#teachers">
+                    <div class="card-body">
+
+                        {% include "parts/teacher_results.html" %}
+
+                    </div>
+                </div>
+
+            </div>
+        {% endfor %}
+        {% for teacher in not_evaluated_teachers %}
+                {% include "parts/supervisor_parts/not_evaluated_teacher.html" %}
+        {% endfor %}
+    </div>
+    </div>
+
+
+
+{% endblock %}

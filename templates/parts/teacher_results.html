@@ -1,0 +1,214 @@
+
+{% set answers_count = count_answers(teacher.id, event.id) %}
+
+<script>
+    var checked = new Set();
+</script>
+
+<div class="text-center">
+    <h2>Anketa: {{ event.name }}</h2>
+    <p>Počet odpovedí: {{ answers_count }}</p>
+</div>
+<div class="text-center mb-4">
+    <h3>Filter odpovedí</h3>
+    <p>V tejto anketovej udalosti vám dali spätnú väzbu žiaci z tried pre predmety uvedené nižšie:</p>
+    {% if filter_checkboxes|length == 0 %}
+        <p style="color:red">V tejto anketovej udalosti nemáte žiadne odpovede od študentov.</p>
+    {% endif %}
+    {% for subject in filter_checkboxes %}
+        <h5>{{ subject[1] }}</h5>
+        {% for class in filter_checkboxes[subject] %}
+            <div class="form-check form-check-inline">
+            <input class="form-check-input" type="checkbox" name="filter" onchange="filterResults(this)"
+                   id="{{ subject[0] }}-{{ class }}" value="{{ subject[0] }};{{ class }}" checked>
+            <label class="form-check-label" for="{{ subject[0] }}-{{ class }}"> {{ class }} </label>
+            </div>
+            <script>
+                checked.add("{{ subject[0] }};{{ class }}");
+            </script>
+        {% endfor %}
+    {% endfor %}
+    <!--<p id="text">:)</p>-->
+</div>
+
+{% for category in categories %}
+
+    <h4>{{ category.name }}</h4>
+
+    {% for question in category.questions %}
+        <h5>{{ question.description }}</h5>
+
+        {% if question.type.name == "text" %}
+
+            {% include "parts/result_parts/text_answers.html" %}
+
+        {% elif question.type.name == "radio" %}
+
+            {% include "parts/result_parts/radio_chart.html" %}
+
+
+        {% elif question.type.name == "checkbox" %}
+
+            {% include "parts/result_parts/checkbox_chart.html" %}
+
+        {% else %}
+
+            <p>Unknown question type</p>
+
+        {% endif %}
+
+    {% endfor %}
+{% endfor %}
+
+{# JS for charts #}
+<script>
+
+
+    var radioChartOptions = {
+        axisX: {
+            showGrid: false
+        },
+        axisY: {
+            onlyInteger: true
+        },
+        distributeSeries: true,
+        high: {{ answers_count }}
+    };
+
+    var checkboxChartOptions = {
+        axisX: {
+            showGrid: false
+        },
+        axisY: {
+            onlyInteger: true
+        },
+        stackBars: true
+    };
+
+
+    var labels = [];
+    var series = [];
+    var series1 = [];
+    var series2 = [];
+
+
+    var charts = [];
+    var all_labels = {};
+    var all_series = {};
+
+    {% for category in categories %}
+        {% for question in category.questions %}
+            {% if question.type.name == "radio" or question.type.name == "checkbox" %}
+                all_labels[{{ teacher.id }}_{{ question.id }}] = [];
+                all_series[{{ teacher.id }}_{{ question.id }}] = [];
+                {% for option in question.options %}
+                    all_labels[{{ teacher.id }}_{{ question.id }}].push("{{ option.description }}");
+                    all_series[{{ teacher.id }}_{{ question.id }}].push({{ get_votes_for_subject_class(option, teacher.id, question.id, event) | safe}});
+                {% endfor %}
+            {% endif %}
+        {% endfor %}
+    {% endfor %}
+
+
+    function filterResults(checkBox) {
+      if (checkBox.checked === true){
+        checked.add(checkBox.value);
+      } else {
+        checked.delete(checkBox.value);
+      }
+
+
+      for (let i = 0; i < charts.length; i++) {
+          let series = [];
+          let chart_id = charts[i][0];
+          let chart_series_src = all_series[chart_id];
+          for (var j = 0; j < chart_series_src.length; j++) {
+              series.push(chart_series_src[j].reduce(sumChecked, 0));
+          }
+          let data = {};
+          if (charts[i][2] === "radio") {
+              data = {labels:all_labels[chart_id], series:series};
+          } else if (charts[i][2] === "checkbox") {
+              series2 = series.map(x => {{ answers_count }} - x);
+              data = {labels:all_labels[chart_id], series:[series, series2]};
+          }
+          charts[i][1].update(data);
+       }
+
+
+      let optionsText = "";
+      for (let item of checked) {
+          optionsText += item;
+      }
+      document.getElementById("text").innerHTML = optionsText;
+    }
+
+    function sumChecked(total, pair) {
+        if (checked.has(pair[0])) {
+            return total + pair[1];
+        }
+        return total;
+    }
+
+</script>
+
+{% for category in categories %}
+    {% for question in category.questions %}
+        {% if question.type.name == "radio" %}
+
+            <script>
+
+                labels = [];
+                series = [];
+
+                {% for option in question.options %}
+                    labels.push("{{ option.description }} ({{ count_options(option, teacher.id, question.id, event) }})");
+                    series.push({{ count_options(option, teacher.id, question.id, event) }});
+                {% endfor %}
+
+                var chart{{ teacher.id }}_{{ question.id }} = new Chartist.Bar(
+                    '#chart{{ teacher.id }}-{{ question.id }}',
+                    {
+                        labels: labels,
+                        series: series
+                    }, radioChartOptions).on('draw', function(data) {
+                      if(data.type === 'bar') {
+                        data.element.attr({
+                          style: 'stroke-width: 30px'
+                        });
+                      };
+                    });
+                charts.push(["{{ teacher.id }}{{ question.id }}", chart{{ teacher.id }}_{{ question.id }}, "radio"]);
+            </script>
+
+        {% elif question.type.name == "checkbox" %}
+
+            <script>
+                labels = [];
+                series1 = [];
+
+                {% for option in question.options %}
+                    labels.push("{{ option.description }} ({{ count_options(option, teacher.id, question.id, event) }}/{{ answers_count }})");
+                    series1.push({{ count_options(option, teacher.id, question.id, event) }});
+                {% endfor %}
+
+                series2 = series1.map(x => {{ answers_count }} - x);
+
+                var chart{{ teacher.id }}_{{ question.id }} = new Chartist.Bar(
+                    '#chart{{ teacher.id }}-{{ question.id }}',
+                    { labels: labels, series: [series1, series2] },
+                    checkboxChartOptions
+                ).on('draw', function(data) {
+                  if(data.type === 'bar') {
+                    data.element.attr({
+                      style: 'stroke-width: 20px'
+                    });
+                  };
+                });
+                charts.push(["{{ teacher.id }}{{ question.id }}", chart{{ teacher.id }}_{{ question.id }}, "checkbox"]);
+            </script>
+
+        {% endif %}
+
+    {% endfor %}
+{% endfor %}

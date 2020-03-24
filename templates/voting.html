@@ -1,0 +1,193 @@
+{% extends "base.html" %}
+{% block title %}Hlasuj{% endblock %}
+
+{% block content %}
+
+<div class="container">
+<h1 class="_main_text_color text-center mb-5">
+    Daj svojmu učiteľovi spätnú väzbu<br>
+    <small class="text-muted">Aktívna anketová udalosť: {{ event.name }}</small>
+</h1>
+
+{% include "parts/flased_messages.html" %}
+
+<div class="accordion shadow-lg mb-5 rounded" id="teachers">
+    {% for teacher in unanswered_teachers %}
+        <div class="card">
+
+            {% include "parts/voting_parts/card_header.html" %}
+
+            <div id="collapse_{{ teacher.id }}_{{ teacher.subject_id }}" class="collapse" aria-labelledby="heading_{{teacher.id}}" data-parent="#teachers">
+              <div class="card-body">
+
+                <form method="post" action="{{ url_for('post_survey') }}" id="dotaznik_{{ teacher.id }}_{{ teacher.subject_id }}">
+                    <input name="_teacher_id" type="hidden" value="{{ teacher.id }}">
+                    <input name="_subject_id" type="hidden" value="{{ teacher.subject_id }}">
+                    {% for category in categories %}
+                        <h4> {{ category.name }}</h4>
+                        {% for question in category.questions %}
+
+                            <label for="{{ teacher.id }}_{{ question.id }}" class="font-weight-bold">{{ question.order }} {{ question.description }}</label>
+
+                            {% if question.type.name == "text" %}
+                                {% include "parts/voting_parts/question-text.html" %}
+
+                            {% elif question.type.name == "radio" %}
+                                {% include "parts/voting_parts/question-radio.html" %}
+
+                            {% elif question.type.name == "checkbox" %}
+                                {% include "parts/voting_parts/question-checkbox.html" %}
+
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
+
+                    <!--- troggers the Modal pop-up -->
+                    <input type="button" name="btn" value="Odošli spätnú väzbu"
+                           id="showModalBtn_{{ teacher.id }}_{{ teacher.subject_id }}"
+                           class="_btn_color btn btn-primary" >
+
+                </form>
+              </div>
+            </div>
+
+        </div>
+    {% endfor %}
+    {% for teacher in answered_teachers %}
+            {% include "parts/voting_parts/answered_teacher.html" %}
+    {% endfor %}
+</div>
+</div>
+
+<!-- Modal - alert if from validation fails-->
+<div class="modal fade" id="validationFailedModal" tabindex="-1" role="dialog"
+     aria-labelledby="validationFailedModalTitle" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered" role="document">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="exampleModalLongTitle">Upozornenie</h5>
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+          <span aria-hidden="true">&times;</span>
+        </button>
+      </div>
+      <div class="modal-body">
+          <div class="alert alert-danger">
+              Nevyplnili ste všetky povinné polia.
+          </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-dismiss="modal">Zavrieť</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% for teacher in unanswered_teachers %}
+
+    <!-- Modal - for user to check answers -->
+    <div class="modal fade" id="confirmSubmit_{{ teacher.id }}_{{ teacher.subject_id }}" tabindex="-1" role="dialog"
+         aria-labelledby="confirmSubmitTitle" aria-hidden="true">
+      <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="confirmSubmitTitle">
+                Je toto spätná väzba, ktorú chceš odoslať učiteľovi
+                <b>{{ teacher.firstname }} {{ teacher.lastname }} </b>
+                za predmet
+                <b>{{ teacher.subject_long }}</b>?
+            </h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+          <div class="modal-body">
+            <table class="table">
+                {% for category in categories %}
+                    {% for question in category.questions %}
+                        <tr>
+                            <th>{{ question.description }}</th>
+                            <td id="review_{{ question.id }}_{{ teacher.id }}_{{ teacher.subject_id }}"></td>
+                        </tr>
+                    {% endfor %}
+                {% endfor %}
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal">Späť</button>
+            <button id="submitFormBtn_{{ teacher.id }}_{{ teacher.subject_id }}" class="_btn_color btn btn-primary">Anonymizovať a odoslať</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+    // todo - vsetko nizsie je vo for-e, pozri premenne preto
+        var input_label_text = "";
+        var checkedBoxes;
+        var checkedBoxesText;
+
+        $('#submitFormBtn_{{ teacher.id }}_{{ teacher.subject_id }}').click(function() {
+          $('#dotaznik_{{ teacher.id }}_{{ teacher.subject_id }}').submit();
+          $(this).attr('disabled','disabled');
+        });
+
+
+        $('#showModalBtn_{{ teacher.id }}_{{ teacher.subject_id }}').click(function(e) {
+            var form = e.target.parentNode;
+
+            // text areas validation
+            var textAreas = Array.from(form.querySelectorAll('textarea[required]'));
+            var textAreasValid = textAreas.reduce(function (result, input) {
+                return input.value.toString().length < 1 ? false : result;
+            }, true);
+
+            // radio button validation
+            var radioButtons = Array.from(form.querySelectorAll('input[type=radio][required]'));
+            var radioButtonsChecked = Object.values(radioButtons.reduce(function (result, input) {
+                var name = input.name;
+
+                if (input.checked) {
+                    result[name] = true;
+                } else if (typeof result[name] === 'undefined') {
+                    result[name] = false;
+                }
+
+                return result;
+            }, {})).every(function (value) { return value });
+
+            if (!textAreasValid || !radioButtonsChecked) {
+                // return $('#validationFailedModal').modal('show');
+            }
+
+            $("#confirmSubmit_{{ teacher.id }}_{{ teacher.subject_id }}").modal('show');
+
+
+            {% for category in categories %}
+                {% for question in category.questions %}
+                    {% if question.type.name == "text" %}
+                        $('#review_{{ question.id }}_{{ teacher.id }}_{{ teacher.subject_id }}').text($('#{{ question.id }}_{{ teacher.id }}_{{ teacher.subject_id }}').val());
+                    {% elif question.type.name == "radio" %}
+                        input_label_text = $("input[name='{{ question.id }}']:checked").parent('label').text();
+                        $('#review_{{ question.id }}_{{ teacher.id }}_{{ teacher.subject_id }}').text(input_label_text);
+
+                    {% elif question.type.name == "checkbox" %}
+                        checkedBoxes = document.querySelectorAll('input[name="{{ question.id }}"]:checked');
+                        checkedBoxesText = "";
+                        var i;
+                        var l = checkedBoxes.length;
+                        for (i = 0; i < l; i++){
+                            checkedBoxesText += checkedBoxes[i].parentElement.textContent;
+                            if (i != checkedBoxes.length - 1) {
+                                checkedBoxesText += ", "
+                            }
+                        }
+                        $('#review_{{ question.id }}_{{ teacher.id }}_{{ teacher.subject_id }}').text(checkedBoxesText); // nahradi vsetky medzery entermi
+                    {%  endif %}
+                {% endfor %}
+            {% endfor %}
+        });
+    </script>
+
+{% endfor %}
+
+{% endblock %}

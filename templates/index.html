@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>index</title>
+</head>
+<body>
+<h1>Info: {{ info }}</h1>
+
+<p>Display some text when the checkbox is checked:</p>
+
+<input type="checkbox" id="myCheck" value="Dejepis" onchange="myFunction(this)"> Dejepis
+<input type="checkbox" id="myCheck2" value="Geografia" onchange="myFunction(this)"> Geografia
+<input type="checkbox" id="myCheck3" value="Občianska" onchange="myFunction(this)"> Občianska
+
+
+<p id="text" style="display:block">Checkbox is CHECKED!</p>
+
+<script>
+let options = new Set();
+
+function myFunction(clicked) {
+  let checkBox = document.getElementById(clicked.id);
+  if (checkBox.checked === true){
+    options.add(checkBox.value);
+  } else {
+    options.delete(checkBox.value);
+  }
+  let optionsText = "";
+  for (let item of options) {
+      optionsText += item;
+  }
+  document.getElementById("text").innerHTML = optionsText;
+}
+</script>
+
+
+</body>
+</html>

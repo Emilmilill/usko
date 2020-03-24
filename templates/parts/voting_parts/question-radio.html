@@ -1,0 +1,19 @@
+<div class="form-group">
+    {% for option in question.options %}
+        <div class="radio">
+          <label>
+              <input type="radio" id="{{ question.id }}_{{ teacher.id }}_{{ teacher.subject_id }}"
+                     name="{{ question.id }}" value="{{ option.id }} " required> {{ option.description }}</label>
+        </div>
+    {% endfor %}
+</div>
+
+{# {% if option.description == "Súhlasím" %}
+                      style="color:rgb(66, 145, 48);"
+                  {% elif option.description == "Skôr súhlasím"  %}
+                        style="color:rgb(147,193,29);"
+                  {% elif option.description == "Skôr nesúhlasím"  %}
+                        style="color:rgb(231,141,85);"
+                  {% elif option.description == "Nesúhlasím"  %}
+                        style="color:rgb(219,85,73);"
+                  {% endif %} #}

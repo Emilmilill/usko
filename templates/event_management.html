@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Správa udalostí{% endblock %}
+
+{% block content %}
+
+    <h1 class="text-center mb-5">Správa udalostí</h1>
+
+    <div class="container">
+
+        {% include "parts/flased_messages.html" %}
+
+        <h2>Označte aktívnu udalosť</h2>
+
+        <form method="post" action="{{ url_for('set_active_event') }}">
+            <div class="radio">
+                <label><input type="radio" name="active_event" value="None"> <strong>Žiadna udalosť</strong></label>
+            </div>
+
+            {% for event in events %}
+                <div class="radio">
+                  <label><input type="radio" name="active_event" value="{{ event.id }}"
+                          {% if event.is_active %} checked {% endif %}> {{ event.name }}
+                          {% if event.is_active %} (aktuálne aktívna) {% endif %}</label>
+                </div>
+            {% endfor %}
+
+            <button type="submit" class="btn btn-primary">Zmeniť aktívnu udalosť</button>
+        </form>
+
+    </div>
+
+{% endblock %}

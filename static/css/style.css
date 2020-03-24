@@ -1,0 +1,64 @@
+/*
+body {
+    font-family: 'ABeeZee', sans-serif ;
+}
+*/
+
+._skintone-bg {
+    background-color: rgb(218, 196, 131);
+    /*
+    telova - rgb(250,199,167)
+     slamenna - rgb(207, 180, 111)
+     */
+}
+
+._main_text_color {
+    color: #3B2F00;
+}
+
+._link_color {
+    color: #00715D;
+}
+
+._link_color:hover {
+    color: #6e211c;
+}
+
+._btn_color {
+    background-color: #4C9558;
+    border-color: #4C9558;
+}
+
+._btn_color:hover {
+    background-color: #00715D;
+    border-color: #4C9558;
+}
+
+
+._white-bg {
+    background-color: white;
+}
+
+._login {
+    width: 300px;
+    margin: auto;
+}
+
+._color-dark {
+    color: #45372c;
+}
+
+
+.table td.fit,
+.table th.fit {
+    white-space: nowrap;
+    width: 1%;
+}
+
+._checkbox .ct-series-a .ct-bar{
+    stroke: #684830;
+}
+
+._checkbox .ct-series-b .ct-bar{
+    stroke: #C39C80;
+}
