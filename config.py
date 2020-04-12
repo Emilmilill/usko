@@ -1,6 +1,7 @@
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from os import urandom
 import logging
 
 
@@ -12,7 +13,7 @@ def create_app():
     app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:root@localhost/identitySync'
     app.config['SQLALCHEMY_BINDS'] = {'usko': 'mysql+pymysql://root:root@localhost/usko'}
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = True
-    app.config['SECRET_KEY'] = 'this_key_will_be_random'
+    app.config['SECRET_KEY'] = urandom(16)
 
     # logging.basicConfig()
     # logging.getLogger('sqlalchemy.engine').setLevel(logging.INFO)

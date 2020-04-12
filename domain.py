@@ -6,6 +6,19 @@ from flask_login import current_user
 class Domain:
 
     @staticmethod
+    def get_context_for(user_role: str) -> dict:
+        if user_role == "student":
+            return Domain.student_context()
+        elif user_role == "teacher":
+            return Domain.teacher_context()
+        elif user_role == "supervisor":
+            return Domain.supervisor_context()
+        elif user_role == "event_manager":
+            return Domain.event_manager_context()
+        else:
+            return dict()
+
+    @staticmethod
     def student_context() -> dict:
         event = Event.get_active_event()
         questions = event.questions

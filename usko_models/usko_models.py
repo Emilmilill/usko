@@ -1,5 +1,4 @@
 from config import db
-from app_context import AppContext
 
 
 class Users(db.Model):
@@ -13,8 +12,16 @@ class Users(db.Model):
 class UserRole(db.Model):
     __bind_key__ = 'usko'
     id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    user_ids = db.relationship("UserHasRole", backref="role")
+
+
+class UserHasRole(db.Model):
+    __bind_key__ = 'usko'
+    id = db.Column(db.Integer, primary_key=True)
     ascid = db.Column(db.Integer)
-    role_name = db.Column(db.String)
+    role_id = db.Column(db.Integer, db.ForeignKey('user_role.id'))
+    # role
 
 
 class Event(db.Model):

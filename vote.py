@@ -1,7 +1,6 @@
-from flask import render_template, request, redirect, url_for, flash
+from flask import render_template, request, redirect, url_for, flash, make_response
 from is_models.is_models import *
 from usko_models.usko_models import *
-from app_context import AppContext
 from config import create_app
 from flask_login import login_required, current_user
 from auth import Auth
@@ -16,7 +15,7 @@ app = create_app()
 
 @app.route('/test')
 def test():
-    info = [current_user.samaccountname, AppContext.user_role]
+    info = [current_user.samaccountname, Auth.get_user_role()]
 
 
     # # pridávanie otázok k eventu
@@ -30,33 +29,55 @@ def test():
     #     i += 1
     # db.session.commit()
 
+    # todo - odstran info z templatov
     return render_template('index.html', info=info)
+
+# ERROR HANDLERS
+
+
+@app.errorhandler(500)
+def server_error():
+    """Internal server error."""
+    return make_response(render_template("errors/500.html"), 500)
+
+
+# VIEW FUNKCIE ##############################################
+
+@app.route('/<site>')
+@login_required
+def serve(site):
+    print("voting:", site)
+    user_role = Auth.get_user_role()
+    if Auth.valid_access(user_role, site):
+        return render_template(site+".html", **Domain.get_context_for(user_role), links=Auth.get_pages(user_role))
+    return render_template("unauthorised.html")
 
 
 @app.route('/')
 @login_required
 def index():
-    info = [current_user.samaccountname, AppContext.user_role]
-    if AppContext.user_role is None:
-        Auth.set_user_role()
-        return redirect(url_for('index'))
-    elif AppContext.user_role == "student":
-        return render_template("voting.html", **Domain.student_context(), info=info)
-    elif AppContext.user_role == "teacher":
-        return render_template("results.html", **Domain.teacher_context(), info=info)
-    elif AppContext.user_role == "supervisor":
-        return render_template('supervisor.html', **Domain.supervisor_context(), info=info)
-    elif AppContext.user_role == "event_manager":
-        return render_template('event_management.html', **Domain.event_manager_context(), info=info)
-    else:
-        return render_template("index.html", info=info)
+    user_role = Auth.get_user_role()
+    print("index:", user_role, Auth.get_pages(user_role))
+    return redirect(url_for("serve", site=Auth.get_pages(user_role)[0]))
 
+
+# LOGIN / LOGOUT ########################################
 
 @app.route('/login')
 def login():
     if not current_user.is_authenticated:
         return render_template('login.html')
     return redirect(url_for('index'))
+
+
+@app.route('/logout')
+@login_required
+def logout():
+    Auth.logout_user()
+    return redirect(url_for('login'))
+
+
+# POSTOVACIE FUNCKCIE ####################################
 
 
 @app.route('/login', methods=['POST'])
@@ -74,17 +95,8 @@ def login_post():
         return redirect(url_for('login'))
 
     Auth.login_user(user)
-    Auth.set_user_role()
 
     return redirect(url_for('index'))
-
-
-@app.route('/logout')
-@login_required
-def logout():
-    Auth.logout_user()
-    Auth.unset_user_role()
-    return redirect(url_for('login'))
 
 
 @app.route('/post_survey', methods=['POST'])
@@ -133,13 +145,13 @@ def post_survey():
         db.session.rollback()
         flash("Pri odosielaní údajov nastala chyba :( Skúste to znovu.", 'error')
         print(e)
-        # todo - tu by bolo super returnut sa spat na stranku s vyplnenym formularom
+        # todo - tu by bolo super returnut sa spat na stranku s vyplnenym formularom, skus @app.before_request()
 
     else:
         teacher = Teachers.query.filter_by(id=teacher_id).first()
         flash('Dotazník bol anonymne odoslaný učiteľovi - ' + teacher.firstname + " " + teacher.lastname + ".")
 
-    return redirect(url_for('index'))
+    return redirect(url_for('index'))  # todo - make_response miesto redirectu?
 
 
 @app.route('/set_active_event', methods=['POST'])
