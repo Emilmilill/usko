@@ -15,8 +15,7 @@ app = create_app()
 
 @app.route('/test')
 def test():
-    info = [current_user.samaccountname, Auth.get_user_role()]
-
+    info = [current_user.samaccountname, Auth.get_user_roles()]
 
     # # pridávanie otázok k eventu
     # event = Event.get_active_event()
@@ -32,8 +31,7 @@ def test():
     # todo - odstran info z templatov
     return render_template('index.html', info=info)
 
-# ERROR HANDLERS
-
+# ERROR HANDLERS ############################################
 
 @app.errorhandler(500)
 def server_error():
@@ -47,18 +45,17 @@ def server_error():
 @login_required
 def serve(site):
     print("voting:", site)
-    user_role = Auth.get_user_role()
-    if Auth.valid_access(user_role, site):
-        return render_template(site+".html", **Domain.get_context_for(user_role), links=Auth.get_pages(user_role))
+    user_roles = Auth.get_user_roles()
+    if Auth.valid_access(user_roles, site):
+        return render_template(site+".html", **Domain.get_context_for(site), links=Auth.get_pages(user_roles))
     return render_template("unauthorised.html")
 
 
 @app.route('/')
 @login_required
 def index():
-    user_role = Auth.get_user_role()
-    print("index:", user_role, Auth.get_pages(user_role))
-    return redirect(url_for("serve", site=Auth.get_pages(user_role)[0]))
+    user_roles = Auth.get_user_roles()
+    return redirect(url_for("serve", site=Auth.get_pages(user_roles)[0]))
 
 
 # LOGIN / LOGOUT ########################################

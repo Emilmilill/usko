@@ -11,7 +11,7 @@ class Auth:
                   "supervisor": ("supervisor", )
                   }
 
-    user_role = None
+    user_roles = []
 
     @staticmethod
     def over_login(meno, heslo):
@@ -33,39 +33,36 @@ class Auth:
 
     @staticmethod
     def logout_user():
-        Auth.unset_user_role()
+        Auth.unset_user_roles()
         logout_user()
 
 ############## role management:
 
     @staticmethod
-    def get_pages(role):
-        return Auth.role_pages[role]
+    def get_pages(user_roles):
+        return tuple(page for role in user_roles for page in Auth.role_pages[role])
 
     @staticmethod
-    def valid_access(user_role, page):
-        return page in Auth.role_pages[user_role]
+    def valid_access(user_roles, page):
+        return page in Auth.get_pages(user_roles)
 
     @staticmethod
     def set_user_role():
-            ascid = current_user.ascid
-            # todo - user moze mat viac roli
-            uhr = UserHasRole.query.filter_by(ascid=ascid).first()
-            print("Auth.set_user_role:", uhr, type(uhr))
-            if uhr is not None:
-                role = uhr.role
-                Auth.user_role = role.name
-            elif current_user.gidnumber == 2200:
-                Auth.user_role = "teacher"
+            for uhr in UserHasRole.query.filter_by(ascid=current_user.ascid).all():
+                Auth.user_roles.append(uhr.role.name)
+
+            if current_user.gidnumber == 2200:
+                Auth.user_roles.append("teacher")
             elif current_user.gidnumber == 2100:
-                Auth.user_role = "student"
-            else:
-                Auth.user_role = "unknown"
+                Auth.user_roles.append("student")
+
+            if len(Auth.user_roles) == 0:
+                Auth.user_roles.append("unkknown")
 
     @staticmethod
-    def get_user_role():
-        return Auth.user_role
+    def get_user_roles():
+        return Auth.user_roles
 
     @staticmethod
-    def unset_user_role():
-        Auth.user_role = None
+    def unset_user_roles():
+        Auth.user_roles = []

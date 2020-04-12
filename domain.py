@@ -6,14 +6,14 @@ from flask_login import current_user
 class Domain:
 
     @staticmethod
-    def get_context_for(user_role: str) -> dict:
-        if user_role == "student":
+    def get_context_for(site: str) -> dict:
+        if site == "voting":
             return Domain.student_context()
-        elif user_role == "teacher":
+        elif site == "results":
             return Domain.teacher_context()
-        elif user_role == "supervisor":
+        elif site == "supervisor":
             return Domain.supervisor_context()
-        elif user_role == "event_manager":
+        elif site == "event_management":
             return Domain.event_manager_context()
         else:
             return dict()
