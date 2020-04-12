@@ -5,17 +5,27 @@ from config import create_app
 from flask_login import login_required, current_user
 from auth import Auth
 from domain import Domain
+from user_roles import UserRoles
 
 # MAIN ------------------------------------------------------------------------
 
 app = create_app()
 
-# PAGES MANAGEMENT ------------------------------------------------------------
 
+# LOGIN MANAGEMENT ------------------------------------------------------------
+
+# paruje cookie s Ldapexport objektom
+@app.login_manager.user_loader
+def load_user(user_id):
+    user = Ldapexport.query.get(int(user_id))
+    user.roles = UserRoles(user)
+    return user
+
+# PAGES MANAGEMENT ------------------------------------------------------------
 
 @app.route('/test')
 def test():
-    info = [current_user.samaccountname, Auth.get_user_roles()]
+    info = [current_user.samaccountname, current_user.roles.get()]
 
     # # pridávanie otázok k eventu
     # event = Event.get_active_event()
@@ -44,19 +54,16 @@ def server_error():
 @app.route('/<site>')
 @login_required
 def serve(site):
-    print("voting:", site)
-    user_roles = Auth.get_user_roles()
-    if Auth.valid_access(user_roles, site):
-        return render_template(site+".html", **Domain.get_context_for(site), links=Auth.get_pages(user_roles))
+    user_roles = current_user.roles
+    if user_roles.can_access(site):
+        return render_template(site+".html", **Domain.get_context_for(site), links=user_roles.get_pages())
     return render_template("unauthorised.html")
 
 
 @app.route('/')
 @login_required
 def index():
-    user_roles = Auth.get_user_roles()
-    return redirect(url_for("serve", site=Auth.get_pages(user_roles)[0]))
-
+    return redirect(url_for("serve", site=current_user.roles.get_pages()[0]))
 
 # LOGIN / LOGOUT ########################################
 

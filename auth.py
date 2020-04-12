@@ -1,5 +1,4 @@
-from flask_login import current_user, login_user, logout_user
-from usko_models.usko_models import UserRole, UserHasRole
+from flask_login import login_user, logout_user
 from pexpect import pxssh
 
 
@@ -29,40 +28,40 @@ class Auth:
     @staticmethod
     def login_user(user):
         login_user(user)
-        Auth.set_user_role()
 
     @staticmethod
     def logout_user():
-        Auth.unset_user_roles()
+        # todo - skontroluj, ci sa po logoute odstrani aj pouzivatelova rola
         logout_user()
+
 
 ############## role management:
 
-    @staticmethod
-    def get_pages(user_roles):
-        return tuple(page for role in user_roles for page in Auth.role_pages[role])
-
-    @staticmethod
-    def valid_access(user_roles, page):
-        return page in Auth.get_pages(user_roles)
-
-    @staticmethod
-    def set_user_role():
-            for uhr in UserHasRole.query.filter_by(ascid=current_user.ascid).all():
-                Auth.user_roles.append(uhr.role.name)
-
-            if current_user.gidnumber == 2200:
-                Auth.user_roles.append("teacher")
-            elif current_user.gidnumber == 2100:
-                Auth.user_roles.append("student")
-
-            if len(Auth.user_roles) == 0:
-                Auth.user_roles.append("unkknown")
-
-    @staticmethod
-    def get_user_roles():
-        return Auth.user_roles
-
-    @staticmethod
-    def unset_user_roles():
-        Auth.user_roles = []
+    # @staticmethod
+    # def get_pages(user_roles):
+    #     return tuple(page for role in user_roles for page in Auth.role_pages[role])
+    #
+    # @staticmethod
+    # def valid_access(user_roles, page):
+    #     return page in Auth.get_pages(user_roles)
+    #
+    # @staticmethod
+    # def set_user_role():
+    #         for uhr in UserHasRole.query.filter_by(ascid=current_user.ascid).all():
+    #             Auth.user_roles.append(uhr.role.name)
+    #
+    #         if current_user.gidnumber == 2200:
+    #             Auth.user_roles.append("teacher")
+    #         elif current_user.gidnumber == 2100:
+    #             Auth.user_roles.append("student")
+    #
+    #         if len(Auth.user_roles) == 0:
+    #             Auth.user_roles.append("unkknown")
+    #
+    # @staticmethod
+    # def get_user_roles():
+    #     return Auth.user_roles
+    #
+    # @staticmethod
+    # def unset_user_roles():
+    #     Auth.user_roles = []

@@ -13,6 +13,10 @@ class attribute.
 
 
 class Ldapexport(UserMixin, db.Model):
+    """
+    Trieda sa používa na reprezentáciu užívateľa po prihlásení. Preto dedí od flask_login.UserMixin
+    Do parametru roles sa priraďujú používateľove role pomocou inštancie triedy UserRoles
+    """
     id = db.Column(db.Integer, primary_key=True)
     samaccountname = db.Column(db.String)
     givenname = db.Column(db.String)
@@ -20,6 +24,7 @@ class Ldapexport(UserMixin, db.Model):
     ascid = db.Column(db.Integer)
     gidnumber = db.Column(db.Integer)
     dn = db.Column(db.String)
+    roles = None  # nesúvisí s ORM, slúži pre uchovanie rolí užívateľa
 
     def __repr__(self):
         return "{} {} {}".format(type(self).__name__, self.ascid, self.samaccountname, self.gidnumber)

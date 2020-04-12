@@ -27,9 +27,4 @@ def create_app():
 
     from is_models.is_models import Ldapexport  # tu kvoli cyklicej zavislosti
 
-    # paruje cookie s Ldapexport objektom
-    @login_manager.user_loader
-    def load_user(user_id):
-        return Ldapexport.query.get(int(user_id))
-
     return app
