@@ -56,7 +56,8 @@ def server_error():
 def serve(site):
     user_roles = current_user.roles
     if user_roles.can_access(site):
-        return render_template(site+".html", **Domain.get_context_for(site), links=user_roles.get_pages())
+        return render_template(site+".html", **Domain.get_context_for(site),
+                               links=user_roles.get_link_tuples())
     return render_template("unauthorised.html")
 
 

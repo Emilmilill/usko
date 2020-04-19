@@ -1,4 +1,5 @@
 from usko_models.usko_models import UserHasRole
+from page import Page
 
 
 class UserRoles:
@@ -18,6 +19,9 @@ class UserRoles:
 
     def get_pages(self):
         return tuple(page for role in self.user_roles for page in UserRoles.role_pages[role])
+
+    def get_link_tuples(self):
+        return tuple((page, Page.get_page_display_name(page)) for page in self.get_pages())
 
     def can_access(self, page):
         return page in self.get_pages()
