@@ -104,6 +104,7 @@ def login_post():
     return redirect(url_for('index'))
 
 
+@login_required
 @app.route('/post_survey', methods=['POST'])
 def post_survey():
     try:
@@ -159,6 +160,7 @@ def post_survey():
     return redirect(url_for('index'))  # todo - make_response miesto redirectu?
 
 
+@login_required
 @app.route('/set_active_event', methods=['POST'])
 def set_active_event():
     result = request.form
