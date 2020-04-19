@@ -42,8 +42,8 @@
                         {% endfor %}
                     {% endfor %}
 
-                    <!--- troggers the Modal pop-up -->
-                    <input type="button" name="btn" value="Odošli spätnú väzbu"
+                    <!--- triggers the Modal pop-up -->
+                    <input type="button" name="btn" value="Skontrolovať"
                            id="showModalBtn_{{ teacher.id }}_{{ teacher.subject_id }}"
                            class="_btn_color btn btn-primary" >
 
@@ -59,7 +59,7 @@
 </div>
 </div>
 
-<!-- Modal - alert if from validation fails-->
+<!-- Modal - alert if form validation fails-->
 <div class="modal fade" id="validationFailedModal" tabindex="-1" role="dialog"
      aria-labelledby="validationFailedModalTitle" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered" role="document">
@@ -84,7 +84,7 @@
 
 {% for teacher in unanswered_teachers %}
 
-    <!-- Modal - for user to check answers -->
+    <!-- Modal - for user to re-read answers -->
     <div class="modal fade" id="confirmSubmit_{{ teacher.id }}_{{ teacher.subject_id }}" tabindex="-1" role="dialog"
          aria-labelledby="confirmSubmitTitle" aria-hidden="true">
       <div class="modal-dialog modal-dialog-centered" role="document">
@@ -127,8 +127,8 @@
         var checkedBoxesText;
 
         $('#submitFormBtn_{{ teacher.id }}_{{ teacher.subject_id }}').click(function() {
-          $('#dotaznik_{{ teacher.id }}_{{ teacher.subject_id }}').submit();
-          $(this).attr('disabled','disabled');
+            $(this).attr('disabled', true);
+            $('#dotaznik_{{ teacher.id }}_{{ teacher.subject_id }}').submit();
         });
 
 
