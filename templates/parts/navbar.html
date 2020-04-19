@@ -1,42 +1,42 @@
-<nav class="navbar navbar-expand-lg navbar-light bg-light d-flex mb-5 shadow">
-        <a class=" navbar-brand" href="{{ url_for('index') }}">
+<nav class="navbar navbar-expand-lg navbar-light bg-light d-flex mb-5 shadow ">
+        <a class="navbar-brand" href="{{ url_for('index') }}">
             <img src="static/images/ear_navbar.jpg" width="30" height="30"
                  class="d-inline-block align-top rounded-circle" alt="">
             <span class="_main_text_color" title="Otvorená Komunikácia medzi Študentom a Učiteľom">UŠKO</span>
         </a>
 
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarNav">
+
         {% block navbar_links %}
             {% if links|length > 1 %}
-
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav">
-                    {% for link in links %}
-                        <li class="nav-item">
-                            <a class="nav-link" id="link_{{ link[0] }}" href="{{ url_for("serve", site=link[0]) }}">
-                                {{ link[1] }}
-                            </a>
-                        </li>
-                    {% endfor %}
-                    </ul>
-                </div>
+                <ul class="navbar-nav mr-auto">
+                {% for link in links %}
+                    <li class="nav-item">
+                        <a class="nav-link" id="link_{{ link[0] }}" href="{{ url_for("serve", site=link[0]) }}">
+                            {{ link[1] }}
+                        </a>
+                    </li>
+                {% endfor %}
+                </ul>
 
             {% else %}
 
-                <span class="navbar-text flex-grow-1"> Otvorená Komunikácia medzi Študentom a Učiteľom </span>
+                <span class="navbar-text flex-grow-1 mr-auto"> Otvorená Komunikácia medzi Študentom a Učiteľom </span>
 
             {% endif %}
-
         {% endblock %}
 
-        <span class="navbar-text mr-4">
-            {{ current_user.givenname }} {{ current_user.sn }}
+        <span class="navbar-text ">
+            <a style="color: #00715D;" href="{{ url_for('logout') }}">Odhlásiť sa</a>
+            <span class="ml-1">({{ current_user.givenname }} {{ current_user.sn }})</span>
         </span>
+        <!--<span class="navbar-text mr-4">({{ current_user.givenname }} {{ current_user.sn }})</span>-->
 
-        <a class="_link_color navbar-link" href="{{ url_for('logout') }}">Odhlásiť sa</a>
+        </div>
 
 </nav>
 
