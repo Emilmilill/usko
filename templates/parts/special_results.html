@@ -100,6 +100,7 @@
     var charts = [];
     var all_labels = {};
     var all_series = {};
+    var text_answer_tables = {};
 
     {% for category in categories %}
         {% for question in category.questions %}
@@ -110,6 +111,8 @@
                     all_labels[{{ question.id }}].push("{{ option.description }}");
                     all_series[{{ question.id }}].push({{ get_votes_for_class(option, question.id, event) | safe}});
                 {% endfor %}
+            {% elif question.type.name == "text" %}
+                text_answer_tables["table{{ question.id }}"] = {{ text_answers4class(question.id, event) | safe}};
             {% endif %}
         {% endfor %}
     {% endfor %}
@@ -139,6 +142,25 @@
           }
           charts[i][1].update(data);
        }
+
+        for (const table_id in text_answer_tables) {
+          $("#"+table_id+" tbody tr").remove();
+          let table_answers = text_answer_tables[table_id];
+          let table_body = document.getElementById(table_id).getElementsByTagName("tbody")[0];
+          let k = 0;
+          for (let j = 0; j < table_answers.length; j++) {
+              if (checked.has(table_answers[j][0])) {
+                  k++;
+                  let row = table_body.insertRow(-1);
+                  let cell1 = row.insertCell(0);
+                  let cell2 = row.insertCell(1);
+                  let cell3 = row.insertCell(2);
+                  cell1.innerHTML = k;
+                  cell2.innerHTML = table_answers[j][0]
+                  cell3.innerHTML = table_answers[j][1];
+              }
+          }
+        }
     }
 
     function sumChecked(total, pair) {

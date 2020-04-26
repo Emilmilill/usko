@@ -291,6 +291,15 @@ def utility_processor():
         print(res)
         return res
 
+    def text_answers4class(question_id, event):
+        res = []
+        q = Question.query.get(question_id)
+        for answer in q.answers:
+            if answer.event_id == event.id:
+                res.append([answer.student_class_name, answer.text_answer.text])
+        print(res)
+        return res
+
     def get_votes_for_subject_class(option, teacher_id, question_id, event):
         d = {}
         for answer in option.answers:
@@ -328,7 +337,8 @@ def utility_processor():
 
     return dict(count_options=count_options, count_answers=count_answers, get_subject_name=get_subject_name,
                 get_option_name=get_option_name, get_votes_for_subject_class=get_votes_for_subject_class,
-                get_votes_for_class=get_votes_for_class, text_answers4subject_class=text_answers4subject_class)
+                get_votes_for_class=get_votes_for_class, text_answers4subject_class=text_answers4subject_class,
+                text_answers4class=text_answers4class)
 
 
 if __name__ == '__main__':
