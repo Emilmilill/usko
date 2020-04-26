@@ -4,7 +4,7 @@ from page import Page
 
 class UserRoles:
 
-    role_pages = {"teacher": ("results", "teacher2"),
+    role_pages = {"teacher": ("results", "results2"),
                   "student": ("voting", ),
                   "event_manager": ("event_management", ),
                   "supervisor": ("supervisor", )

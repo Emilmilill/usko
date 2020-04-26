@@ -9,7 +9,7 @@
     <small class="text-muted">Aktívna anketová udalosť: {{ event.name }}</small>
 </h1>
 
-{% include "parts/flased_messages.html" %}
+{% include "parts/flashed_messages.html" %}
 
 <div class="accordion shadow-lg mb-5 rounded" id="teachers">
     {% for teacher in unanswered_teachers %}

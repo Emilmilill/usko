@@ -1,5 +1,5 @@
 
-{% set answers_count = count_answers(teacher.id, event.id) %}
+{% set answers_count = count_answers(0, event.id) %}
 
 <script>
     var checked = new Set();
@@ -19,22 +19,19 @@
     </div>
     </form>
 
-    <p>2. Vyberte triedy a predmety: </p>
+    <p>2. Vyberte triedy: </p>
     {% if filter_checkboxes|length == 0 %}
         <p style="color:red">V tejto anketovej udalosti nemáte žiadne odpovede od študentov.</p>
     {% endif %}
-    {% for subject in filter_checkboxes %}
-        <h5>{{ subject[1] }}</h5>
-        {% for class in filter_checkboxes[subject] %}
-            <div class="form-check form-check-inline">
-            <input class="form-check-input" type="checkbox" name="filter" onchange="filterResults(this)"
-                   id="{{ subject[0] }}-{{ class }}" value="{{ subject[0] }};{{ class }}" checked>
-            <label class="form-check-label" for="{{ subject[0] }}-{{ class }}"> {{ class }} </label>
-            </div>
-            <script>
-                checked.add("{{ subject[0] }};{{ class }}");
-            </script>
-        {% endfor %}
+    {% for class in filter_checkboxes %}
+        <div class="form-check form-check-inline">
+        <input class="form-check-input" type="checkbox" name="filter" onchange="filterResults(this)"
+               id="{{ class }}" value="{{ class }}" checked>
+        <label class="form-check-label" for="{{ class }}"> {{ class }} </label>
+        </div>
+        <script>
+            checked.add("{{ class }}");
+        </script>
     {% endfor %}
     <!--<p>Počet odpovedí: {{ answers_count }}</p>-->
 </div>
@@ -48,16 +45,16 @@
 
         {% if question.type.name == "text" %}
 
-            {% include "parts/result_parts/text_answers.html" %}
+            {% include "parts/result2_parts/text_answers.html" %}
 
         {% elif question.type.name == "radio" %}
 
-            {% include "parts/result_parts/radio_chart.html" %}
+            {% include "parts/result2_parts/radio_chart.html" %}
 
 
         {% elif question.type.name == "checkbox" %}
 
-            {% include "parts/result_parts/checkbox_chart.html" %}
+            {% include "parts/result2_parts/checkbox_chart.html" %}
 
         {% else %}
 
@@ -103,22 +100,20 @@
     var charts = [];
     var all_labels = {};
     var all_series = {};
-    var text_answer_tables = {};
 
     {% for category in categories %}
         {% for question in category.questions %}
             {% if question.type.name == "radio" or question.type.name == "checkbox" %}
-                all_labels[{{ teacher.id }}_{{ question.id }}] = [];
-                all_series[{{ teacher.id }}_{{ question.id }}] = [];
+                all_labels[{{ question.id }}] = [];
+                all_series[{{ question.id }}] = [];
                 {% for option in question.options %}
-                    all_labels[{{ teacher.id }}_{{ question.id }}].push("{{ option.description }}");
-                    all_series[{{ teacher.id }}_{{ question.id }}].push({{ get_votes_for_subject_class(option, teacher.id, question.id, event) | safe}});
+                    all_labels[{{ question.id }}].push("{{ option.description }}");
+                    all_series[{{ question.id }}].push({{ get_votes_for_class(option, question.id, event) | safe}});
                 {% endfor %}
-            {% elif question.type.name == "text" %}
-                text_answer_tables["table{{ teacher.id }}-{{ question.id }}"] = {{ text_answers4subject_class(teacher.id, question.id, event) | safe}};
             {% endif %}
         {% endfor %}
     {% endfor %}
+
 
     function filterResults(checkBox) {
       if (checkBox.checked === true){
@@ -126,6 +121,7 @@
       } else {
         checked.delete(checkBox.value);
       }
+
 
       for (let i = 0; i < charts.length; i++) {
           let series = [];
@@ -143,28 +139,6 @@
           }
           charts[i][1].update(data);
        }
-
-        for (const table_id in text_answer_tables) {
-          $("#"+table_id+" tbody tr").remove();
-          let table_answers = text_answer_tables[table_id];
-          let table_body = document.getElementById(table_id).getElementsByTagName("tbody")[0];
-          let k = 0;
-          for (let j = 0; j < table_answers.length; j++) {
-              if (checked.has(table_answers[j][0])) {
-                  k++;
-                  let row = table_body.insertRow(-1);
-                  let cell1 = row.insertCell(0);
-                  let cell2 = row.insertCell(1);
-                  let cell3 = row.insertCell(2);
-                  let cell4 = row.insertCell(3);
-                  cell1.innerHTML = k;
-                  cell2.innerHTML = table_answers[j][0].split(";")[1];
-                  cell3.innerHTML = table_answers[j][1];
-                  cell4.innerHTML = table_answers[j][2];
-              }
-          }
-        }
-
     }
 
     function sumChecked(total, pair) {
@@ -186,12 +160,12 @@
                 series = [];
 
                 {% for option in question.options %}
-                    labels.push("{{ option.description }} ({{ count_options(option, teacher.id, question.id, event) }})");
-                    series.push({{ count_options(option, teacher.id, question.id, event) }});
+                    labels.push("{{ option.description }} ({{ count_options(option, 0, question.id, event) }})");
+                    series.push({{ count_options(option, 0, question.id, event) }});
                 {% endfor %}
 
-                var chart{{ teacher.id }}_{{ question.id }} = new Chartist.Bar(
-                    '#chart{{ teacher.id }}-{{ question.id }}',
+                var chart{{ question.id }} = new Chartist.Bar(
+                    '#chart{{ question.id }}',
                     {
                         labels: labels,
                         series: series
@@ -202,7 +176,7 @@
                         });
                       };
                     });
-                charts.push(["{{ teacher.id }}{{ question.id }}", chart{{ teacher.id }}_{{ question.id }}, "radio"]);
+                charts.push(["{{ question.id }}", chart{{ question.id }}, "radio"]);
             </script>
 
         {% elif question.type.name == "checkbox" %}
@@ -212,14 +186,14 @@
                 series1 = [];
 
                 {% for option in question.options %}
-                    labels.push("{{ option.description }} ({{ count_options(option, teacher.id, question.id, event) }}/{{ answers_count }})");
-                    series1.push({{ count_options(option, teacher.id, question.id, event) }});
+                    labels.push("{{ option.description }} ({{ count_options(option, 0, question.id, event) }}/{{ answers_count }})");
+                    series1.push({{ count_options(option, 0, question.id, event) }});
                 {% endfor %}
 
                 series2 = series1.map(x => {{ answers_count }} - x);
 
-                var chart{{ teacher.id }}_{{ question.id }} = new Chartist.Bar(
-                    '#chart{{ teacher.id }}-{{ question.id }}',
+                var chart{{ question.id }} = new Chartist.Bar(
+                    '#chart{{ question.id }}',
                     { labels: labels, series: [series1, series2] },
                     checkboxChartOptions
                 ).on('draw', function(data) {
@@ -229,7 +203,7 @@
                     });
                   };
                 });
-                charts.push(["{{ teacher.id }}{{ question.id }}", chart{{ teacher.id }}_{{ question.id }}, "checkbox"]);
+                charts.push(["{{ question.id }}", chart{{ question.id }}, "checkbox"]);
             </script>
 
         {% endif %}

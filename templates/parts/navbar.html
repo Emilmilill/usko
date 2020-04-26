@@ -43,7 +43,7 @@
 <script>
     if (document.getElementsByClassName("nav-link").length > 1) {
         let pathArray = window.location.pathname.split('/');
-        let path = pathArray[pathArray.length - 1];
+        let path = pathArray[1];
         document.getElementById("link_" + path).classList.add("active");
     }
 

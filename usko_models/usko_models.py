@@ -31,6 +31,7 @@ class Event(db.Model):
     type_id = db.Column(db.Integer, db.ForeignKey('event_type.id'))
     is_active = db.Column(db.Boolean)
     questions = db.relationship("EventQuestions", back_populates="event")
+    answers = db.relationship("Answer", backref="event")
     # type
 
     def __repr__(self):
@@ -39,6 +40,14 @@ class Event(db.Model):
     @staticmethod
     def get_active_event():
         return Event.query.filter_by(is_active=True).first()
+
+    @staticmethod
+    def get_standard_events():
+        return Event.query.filter_by(type_id=1)
+
+    @staticmethod
+    def get_corona_events():
+        return Event.query.filter_by(type_id=2)
 
 
 class EventType(db.Model):
@@ -126,6 +135,7 @@ class Answer(db.Model):
     option_answers = db.relationship("Option", secondary="answer_options", backref=db.backref("answers"),
                                      lazy="dynamic")
     # text_answer (from TextAnswer backref)
+    # event
 
     def __repr__(self):
         return "{} {}".format(type(self).__name__, self.id)

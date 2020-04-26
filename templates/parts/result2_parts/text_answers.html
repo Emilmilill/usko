@@ -1,21 +1,19 @@
 <div>
-    <table class="table table-sm table-striped table-hover" id="table{{ teacher.id }}-{{ question.id }}">
+    <table class="table table-sm table-striped table-hover">
         <thead>
             <tr>
                 <th class="align-middle">#</th>
                 <th class="align-middle">Trieda žiaka</th>
-                <th class="align-middle">Predmet</th>
                 <th class="align-middle">Odpovede žiakov ({{ answers_count }})</th>
             </tr>
         </thead>
         <tbody>
             {% set ind = [1] %}
             {% for answer in question.answers %}
-                {% if answer.event_id == event.id and answer.teacher_id == teacher.id %}
+                {% if answer.event_id == event.id %}
                     <tr>
                         <th scope="row">{{ ind[0] }}</th>
                         <td>{{ answer.student_class_name }}</td>
-                        <td>{{ get_subject_name(answer.subject_id) }}</td>
                         <td>{{ answer.text_answer.text }}</td>
                     </tr>
                     {% if ind.append(ind.pop() + 1) %}{% endif %} {# increment count by 1 #}

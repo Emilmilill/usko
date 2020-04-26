@@ -13,6 +13,8 @@ class Domain:
             return Domain.student_context_corona()
         elif site == "results":
             return Domain.teacher_context()
+        elif site == "results2":
+            return Domain.special_context()
         elif site == "supervisor":
             return Domain.supervisor_context()
         elif site == "event_management":
@@ -45,8 +47,8 @@ class Domain:
                 "categories": categories, "answered_teachers": answered_teachers, "student": student, "event": event}
 
     @staticmethod
-    def teacher_context() -> dict:
-        event = Event.get_active_event()
+    def teacher_context(event) -> dict:
+        events = Event.query.filter_by(type_id=1).all()
         answers_count = StudentAnsweredTeacher.query.filter_by(teacher_id=current_user.ascid,
                                                                event_id=event.id).count()
         categories = QuestionCategory.get_event_categories(event)
@@ -59,8 +61,19 @@ class Domain:
         filter_checkboxes = {subject: [answer[0] for answer in Answer.query.with_entities(Answer.student_class_name).
                                                                filter_by(subject_id=subject[0]).distinct().all()]
                              for subject in subjects}
+        print(filter_checkboxes)
         return {"teacher": teacher, "event": event, "answers_count": answers_count, "categories": categories,
-                "filter_checkboxes": filter_checkboxes}
+                "filter_checkboxes": filter_checkboxes, "events": events}
+
+    @staticmethod
+    def special_context(event) -> dict:
+        events = Event.query.filter_by(type_id=2).all()
+        answers_count = StudentAnsweredTeacher.query.filter_by(teacher_id=current_user.ascid,
+                                                               event_id=event.id).count()
+        categories = QuestionCategory.get_event_categories(event)
+        filter_checkboxes = set(answer.student_class_name for answer in event.answers)
+        return {"event": event, "answers_count": answers_count, "categories": categories,
+                "filter_checkboxes": filter_checkboxes, "events": events}
 
     @staticmethod
     def supervisor_context() -> dict:

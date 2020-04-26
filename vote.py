@@ -53,6 +53,32 @@ def server_error():
 
 # VIEW FUNKCIE ##############################################
 
+@app.route('/results/<event_name>')
+@login_required
+def results(event_name=None):
+    user_roles = current_user.roles
+    event = None
+    if event_name is not None:
+        event = Event.query.filter_by(name=event_name).first()
+    if event_name is None or event is None:
+        event = Event.query.filter_by(type_id=1).first()
+    return render_template('results.html', **Domain.teacher_context(event), links=user_roles.get_link_tuples(),
+                           event_name=event_name)
+
+
+@app.route('/results2/<event_name>')
+@login_required
+def results2(event_name=None):
+    user_roles = current_user.roles
+    event = None
+    if event_name is not None:
+        event = Event.query.filter_by(name=event_name).first()
+    if event_name is None or event is None:
+        event = Event.query.filter_by(type_id=2).first()
+    return render_template('results2.html', **Domain.special_context(event), links=user_roles.get_link_tuples(),
+                           event_name=event_name)
+
+
 @app.route('/<site>')
 @login_required
 def serve(site):
@@ -60,9 +86,12 @@ def serve(site):
     if user_roles.can_access(site):
         if site == "voting" and Event.get_active_event().type.name == "corona":
             site += "_corona"
+        elif site == "results":
+            return redirect(url_for("results", event_name=Event.query.filter_by(type_id=1).first().name))
+        elif site == "results2":
+            return redirect(url_for("results2", event_name=Event.query.filter_by(type_id=2).first().name))
         return render_template(site+".html", **Domain.get_context_for(site), links=user_roles.get_link_tuples())
     return render_template("unauthorised.html")
-
 
 @app.route('/')
 @login_required
@@ -252,11 +281,33 @@ def utility_processor():
                 poc += 1
         return poc
 
+    def text_answers4subject_class(teacher_id, question_id, event):
+        res = []
+        q = Question.query.get(question_id)
+        for answer in q.answers:
+            if answer.event_id == event.id and answer.teacher_id == teacher_id:
+                key = str(answer.subject_id) + ";" + str(answer.student_class_name)
+                res.append([key, Subjects.query.get(answer.subject_id).short, answer.text_answer.text])
+        print(res)
+        return res
+
     def get_votes_for_subject_class(option, teacher_id, question_id, event):
         d = {}
         for answer in option.answers:
             if answer.event_id == event.id and answer.teacher_id == teacher_id and answer.question_id == question_id:
                 key = str(answer.subject_id) + ";" + str(answer.student_class_name)
+                d[key] = d.get(key, 0) + 1
+        l = []
+        for key, value in d.items():
+            l.append([key, value])
+        print(l)
+        return l
+
+    def get_votes_for_class(option, question_id, event):
+        d = {}
+        for answer in option.answers:
+            if answer.event_id == event.id and answer.question_id == question_id:
+                key = str(answer.student_class_name)
                 d[key] = d.get(key, 0) + 1
         l = []
         for key, value in d.items():
@@ -276,7 +327,8 @@ def utility_processor():
         return Option.query.filter_by(id=option_id).first()
 
     return dict(count_options=count_options, count_answers=count_answers, get_subject_name=get_subject_name,
-                get_option_name=get_option_name, get_votes_for_subject_class=get_votes_for_subject_class)
+                get_option_name=get_option_name, get_votes_for_subject_class=get_votes_for_subject_class,
+                get_votes_for_class=get_votes_for_class, text_answers4subject_class=text_answers4subject_class)
 
 
 if __name__ == '__main__':
