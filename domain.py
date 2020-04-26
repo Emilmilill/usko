@@ -9,6 +9,8 @@ class Domain:
     def get_context_for(site: str) -> dict:
         if site == "voting":
             return Domain.student_context()
+        elif site == "voting_corona":
+            return Domain.student_context_corona()
         elif site == "results":
             return Domain.teacher_context()
         elif site == "supervisor":
@@ -17,6 +19,16 @@ class Domain:
             return Domain.event_manager_context()
         else:
             return dict()
+
+    @staticmethod
+    def student_context_corona() -> dict:
+        event = Event.get_active_event()
+        questions = event.questions
+        categories = QuestionCategory.get_event_categories(event)
+        answered = StudentAnsweredTeacher.query.filter_by(student_id=current_user.ascid, event_id=event.id,
+                                                          teacher_id=0, subject_id=0).first() is not None
+        return {"name": current_user.ascid, "questions": questions, "categories": categories, "event": event,
+                "answered": answered}
 
     @staticmethod
     def student_context() -> dict:

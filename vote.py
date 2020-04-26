@@ -25,7 +25,7 @@ def load_user(user_id):
 
 @app.route('/test')
 def test():
-    info = [current_user.samaccountname, current_user.roles.get()]
+    #info = [current_user.samaccountname, current_user.roles.get()]
 
     # # pridávanie otázok k eventu
     # event = Event.get_active_event()
@@ -39,7 +39,9 @@ def test():
     # db.session.commit()
 
     # todo - odstran info z templatov
-    return render_template('index.html', info=info)
+    #return render_template('index.html', info=info)
+
+    return str(Help.test())
 
 # ERROR HANDLERS ############################################
 
@@ -56,8 +58,9 @@ def server_error():
 def serve(site):
     user_roles = current_user.roles
     if user_roles.can_access(site):
-        return render_template(site+".html", **Domain.get_context_for(site),
-                               links=user_roles.get_link_tuples())
+        if site == "voting" and Event.get_active_event().type.name == "corona":
+            site += "_corona"
+        return render_template(site+".html", **Domain.get_context_for(site), links=user_roles.get_link_tuples())
     return render_template("unauthorised.html")
 
 
@@ -102,6 +105,60 @@ def login_post():
     Auth.login_user(user)
 
     return redirect(url_for('index'))
+
+
+@login_required
+@app.route('/post_survey_corona', methods=['POST'])
+def post_survey_corona():
+    try:
+        result = request.form
+        event = Event.get_active_event()
+        teacher_id = 0
+        subject_id = 0
+        sc_id = Students.query.get(current_user.ascid).classid
+        sc_name = Classes.query.get(sc_id).name
+        for question_id, value in result.items():
+            question = Question.query.filter_by(id=question_id).first()
+            if question.type.name == "text":
+                text_answer = TextAnswer(text=value)
+                db.session.add(text_answer)
+                answer = Answer(text_answer_id=None, event_id=event.id, question_id=question_id,
+                                teacher_id=teacher_id, subject_id=subject_id, student_class_name=sc_name)
+                answer.text_answer = text_answer
+                db.session.add(answer)
+            elif question.type.name == "radio":
+                option = Option.query.filter_by(id=value).first()
+                answer = Answer(text_answer_id=None, event_id=event.id, question_id=question_id,
+                                teacher_id=teacher_id, subject_id=subject_id, student_class_name=sc_name)
+                db.session.add(answer)
+
+                answer.option_answers.append(option)
+
+            elif question.type.name == "checkbox":
+
+                answer = Answer(text_answer_id=None, event_id=event.id, question_id=question_id,
+                                teacher_id=teacher_id, subject_id=subject_id, student_class_name=sc_name)
+                db.session.add(answer)
+                for val in result.getlist(question_id):
+                    option = Option.query.filter_by(id=val).first()
+                    answer.option_answers.append(option)
+            else:
+                print("uknown question type")
+        s_answered_t = StudentAnsweredTeacher(event_id=event.id, student_id=current_user.ascid, teacher_id=teacher_id,
+                                              subject_id=subject_id)
+        db.session.add(s_answered_t)
+        db.session.commit()
+
+    except Exception as e:
+        db.session.rollback()
+        flash("Pri odosielaní údajov nastala chyba :( Skúste to znovu.", 'error')
+        print(e)
+        # todo - tu by bolo super returnut sa spat na stranku s vyplnenym formularom, skus @app.before_request()
+
+    else:
+        flash('Dotazník bol anonymne odoslaný.')
+
+    return redirect(url_for('index'))  # todo - make_response miesto redirectu?
 
 
 @login_required

@@ -13,14 +13,14 @@
 
         <form method="post" action="{{ url_for('set_active_event') }}">
             <div class="radio">
-                <label><input type="radio" name="active_event" value="None"> <strong>Žiadna udalosť</strong></label>
+                <label style="color: crimson;"><input type="radio" name="active_event" value="None"> Žiadna udalosť</label>
             </div>
 
             {% for event in events %}
                 <div class="radio">
                   <label><input type="radio" name="active_event" value="{{ event.id }}"
-                          {% if event.is_active %} checked {% endif %}> {{ event.name }}
-                          {% if event.is_active %} (aktuálne aktívna) {% endif %}</label>
+                          {% if event.is_active %} checked > <strong> {% else %} > {% endif %} {{ event.name }}, {{ event.type.display_name }}
+                      {% if event.is_active %} (aktuálne aktívna) </strong>{% endif %}</label>
                 </div>
             {% endfor %}
 

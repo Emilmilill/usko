@@ -94,3 +94,15 @@ class Subjects(db.Model):
     def __repr__(self):
         return "{} {} {}".format(type(self).__name__, self.short, self.name)
 
+
+class Help:
+    @staticmethod
+    def test():
+        sql_cmd = text('''
+                        SELECT TABLE_NAME
+                        FROM INFORMATION_SCHEMA.TABLES
+                        WHERE TABLE_TYPE = 'BASE TABLE' AND TABLE_SCHEMA='usko'
+                    ''')
+        q = db.session.execute(sql_cmd)
+
+        return [t for t in q]

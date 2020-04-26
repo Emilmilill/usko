@@ -28,8 +28,10 @@ class Event(db.Model):
     __bind_key__ = 'usko'
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String)
+    type_id = db.Column(db.Integer, db.ForeignKey('event_type.id'))
     is_active = db.Column(db.Boolean)
     questions = db.relationship("EventQuestions", back_populates="event")
+    # type
 
     def __repr__(self):
         return "{} {}".format(type(self).__name__, self.name)
@@ -37,6 +39,14 @@ class Event(db.Model):
     @staticmethod
     def get_active_event():
         return Event.query.filter_by(is_active=True).first()
+
+
+class EventType(db.Model):
+    __bind_key__ = 'usko'
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String)
+    display_name = db.Column(db.String)
+    events = db.relationship("Event", backref="type")
 
 
 class QuestionCategory(db.Model):

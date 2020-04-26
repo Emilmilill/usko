@@ -1,0 +1,9 @@
+<div class="form-group">
+    {% for option in question.options %}
+        <div class="radio">
+          <label>
+              <input type="radio" id="{{ question.id }}"
+                     name="{{ question.id }}" value="{{ option.id }} " required> {{ option.description }}</label>
+        </div>
+    {% endfor %}
+</div>

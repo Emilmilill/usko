@@ -4,14 +4,6 @@ from pexpect import pxssh
 
 class Auth:
 
-    role_pages = {"teacher": ("results", "teacher2"),
-                  "student": ("voting", ),
-                  "event_manager": ("event_management", ),
-                  "supervisor": ("supervisor", )
-                  }
-
-    user_roles = []
-
     @staticmethod
     def over_login(meno, heslo):
         if heslo == " ":
