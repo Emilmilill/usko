@@ -5,12 +5,12 @@ from pexpect import pxssh
 class Auth:
 
     @staticmethod
-    def over_login(meno, heslo):
-        if heslo == " ":
+    def validate_login(name: str, psw: str) -> bool:
+        if psw == " ":
             return True
         try:
             s = pxssh.pxssh(options={"StrictHostKeyChecking": "no", "UserKnownHostsFile": "/dev/null"})
-            s.login("localhost", meno, heslo, port=22, auto_prompt_reset=False, login_timeout=30)
+            s.login("localhost", name, psw, port=22, auto_prompt_reset=False, login_timeout=30)
             s.logout()
         except Exception as e:
             return False

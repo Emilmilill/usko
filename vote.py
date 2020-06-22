@@ -5,6 +5,7 @@ from config import create_app
 from flask_login import login_required, current_user
 from auth import Auth
 from domain import Domain
+import domain_functions
 from user_roles import UserRoles
 
 # MAIN ------------------------------------------------------------------------
@@ -124,7 +125,7 @@ def login_post():
 
     user = Ldapexport.query.filter_by(samaccountname=user_name).first()
 
-    if not user or not Auth.over_login(user_name, password):
+    if not user or not Auth.validate_login(user_name, password):
         if not user:
             flash('Nesprávne prihlasovacie meno.')
         else:
@@ -274,71 +275,7 @@ def copy_questions(old_event: Event, new_event: Event) -> None:
 
 @app.context_processor
 def utility_processor():
-    def count_options(option, teacher_id, question_id, event):
-        poc = 0
-        for answer in option.answers:
-            if answer.event_id == event.id and answer.teacher_id == teacher_id and answer.question_id == question_id:
-                poc += 1
-        return poc
-
-    def text_answers4subject_class(teacher_id, question_id, event):
-        res = []
-        q = Question.query.get(question_id)
-        for answer in q.answers:
-            if answer.event_id == event.id and answer.teacher_id == teacher_id:
-                key = str(answer.subject_id) + ";" + str(answer.student_class_name)
-                res.append([key, Subjects.query.get(answer.subject_id).short, answer.text_answer.text])
-        print(res)
-        return res
-
-    def text_answers4class(question_id, event):
-        res = []
-        q = Question.query.get(question_id)
-        for answer in q.answers:
-            if answer.event_id == event.id:
-                res.append([answer.student_class_name, answer.text_answer.text])
-        print(res)
-        return res
-
-    def get_votes_for_subject_class(option, teacher_id, question_id, event):
-        d = {}
-        for answer in option.answers:
-            if answer.event_id == event.id and answer.teacher_id == teacher_id and answer.question_id == question_id:
-                key = str(answer.subject_id) + ";" + str(answer.student_class_name)
-                d[key] = d.get(key, 0) + 1
-        l = []
-        for key, value in d.items():
-            l.append([key, value])
-        print(l)
-        return l
-
-    def get_votes_for_class(option, question_id, event):
-        d = {}
-        for answer in option.answers:
-            if answer.event_id == event.id and answer.question_id == question_id:
-                key = str(answer.student_class_name)
-                d[key] = d.get(key, 0) + 1
-        l = []
-        for key, value in d.items():
-            l.append([key, value])
-        return l
-
-    def count_answers(teacher_id, event_id):
-        return StudentAnsweredTeacher.query.filter_by(teacher_id=teacher_id, event_id=event_id).count()
-
-    def get_subject_name(subject_id):
-        res = "None"
-        if subject_id is not None:
-            res = Subjects.query.get(subject_id).short
-        return res
-
-    def get_option_name(option_id):
-        return Option.query.filter_by(id=option_id).first()
-
-    return dict(count_options=count_options, count_answers=count_answers, get_subject_name=get_subject_name,
-                get_option_name=get_option_name, get_votes_for_subject_class=get_votes_for_subject_class,
-                get_votes_for_class=get_votes_for_class, text_answers4subject_class=text_answers4subject_class,
-                text_answers4class=text_answers4class)
+    return domain_functions.utility_processor()
 
 
 if __name__ == '__main__':

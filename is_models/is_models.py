@@ -53,7 +53,7 @@ class TtLessons(db.Model):
     id = db.Column(db.String, primary_key=True)
     classids = db.Column(db.String)
     teacherids = db.Column(db.String, db.ForeignKey('tt_teachers.id'))
-    subjectid = db.column(db.String, db.ForeignKey('tt_subjects'))
+    subjectid = db.column(db.String, db.ForeignKey('subjects'))
 
     def __repr__(self):
         return "{} {}".format(type(self).__name__, self.id)
@@ -78,7 +78,7 @@ class Teachers(db.Model):
             JOIN teachers t ON LOCATE(t.id, l.teacherids)
             WHERE s.id = {}
             GROUP BY t.id, t.firstname, t.lastname, su.id, su.short
-            ORDER BY T.lastname
+            ORDER BY t.lastname
         '''.format(student_id))
         q = db.session.execute(sql_cmd)
 
@@ -89,7 +89,6 @@ class Subjects(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     short = db.Column(db.String)
     name = db.Column(db.String)
-    tt = db.Column(db.Integer)
 
     def __repr__(self):
         return "{} {} {}".format(type(self).__name__, self.short, self.name)

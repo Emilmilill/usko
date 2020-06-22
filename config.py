@@ -25,6 +25,6 @@ def create_app():
     login_manager.login_message = 'Pre prístup na túto stránku je nutné sa prihlásiť.'
     login_manager.init_app(app)
 
-    from is_models.is_models import Ldapexport  # tu kvoli cyklicej zavislosti
+    # from is_models.is_models import Ldapexport
 
     return app

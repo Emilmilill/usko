@@ -23,7 +23,7 @@ class UserRoles:
     def get_link_tuples(self):
         return tuple((page, Page.get_page_display_name(page)) for page in self.get_pages())
 
-    def can_access(self, page):
+    def can_access(self, page: str) -> bool:
         return page in self.get_pages()
 
     def set(self, user):

@@ -43,11 +43,11 @@ class Event(db.Model):
 
     @staticmethod
     def get_standard_events():
-        return Event.query.filter_by(type_id=1)
+        return Event.query.filter_by(type_id=1).all()
 
     @staticmethod
     def get_corona_events():
-        return Event.query.filter_by(type_id=2)
+        return Event.query.filter_by(type_id=2).all()
 
 
 class EventType(db.Model):
