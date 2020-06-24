@@ -37,7 +37,7 @@ def test():
     #     e_q.event = event
     #     event.questions.append(e_q)
     #     i += 1
-    # db.session.commit()
+    # db.session.commit() ...
 
     # todo - odstran info z templatov
     #return render_template('index.html', info=info)
