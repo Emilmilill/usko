@@ -1,4 +1,4 @@
-from flask import render_template, request, redirect, url_for, flash, make_response
+from flask import render_template, request, redirect, url_for, flash, make_response, session
 from is_models.is_models import *
 from usko_models.usko_models import *
 from config import create_app
@@ -42,7 +42,7 @@ def test():
     # todo - odstran info z templatov
     #return render_template('index.html', info=info)
 
-    return str(Help.test())
+    return str(session)
 
 # ERROR HANDLERS ############################################
 

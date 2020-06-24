@@ -135,7 +135,7 @@
             }, {})).every(function (value) { return value });
 
             if (!textAreasValid || !radioButtonsChecked) {
-                // return $('#validationFailedModal').modal('show');
+                return $('#validationFailedModal').modal('show');
             }
 
             $("#confirmSubmit").modal('show');

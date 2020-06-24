@@ -156,7 +156,7 @@
             }, {})).every(function (value) { return value });
 
             if (!textAreasValid || !radioButtonsChecked) {
-                // return $('#validationFailedModal').modal('show');
+                return $('#validationFailedModal').modal('show');
             }
 
             $("#confirmSubmit_{{ teacher.id }}_{{ teacher.subject_id }}").modal('show');
